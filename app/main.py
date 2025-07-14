@@ -12,6 +12,7 @@ import os
 import shutil
 from datetime import datetime
 from pydantic import BaseModel
+import asyncio
 
 from app.core.config import settings
 from app.core.logging import setup_logging
@@ -19,9 +20,18 @@ from app.api.routes import router
 from app.services.batch_manager import BatchManager
 from app.services.image_processor import ImageProcessor
 from app.utils.file_utils import get_files_by_date
+from utils.config_utils import read_json_config
 
 # Setup logging
 logger = setup_logging()
+
+def is_cold_stop():
+    config = read_json_config("aadhaar_stop.json")
+    return config.get("cold_stop", 0) == 1
+
+def get_batch_size():
+    config = read_json_config("aadhaar_start.json")
+    return config.get("batch_size", 20)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -107,12 +117,23 @@ async def serve_ui():
 async def process_upload(
     background_tasks: BackgroundTasks,
     files: list[UploadFile] = File(...),
-    batch_size: int = Form(20)
+    batch_size: int = Form(None)
 ):
     """
     Upload a folder of files and automatically create batches for processing.
     Handles folder structure and creates batches of specified size.
     """
+    # Cold stop check
+    if is_cold_stop():
+        return JSONResponse(
+            status_code=503,
+            content={"error": "Processing is currently paused by admin (cold stop)."}
+        )
+
+    # Use batch size from config if not provided
+    if batch_size is None:
+        batch_size = get_batch_size()
+
     try:
         # Create upload directory
         input_dir = Path("data/input/web_upload")
@@ -182,21 +203,16 @@ async def process_upload(
             
             logger.info(f"Created {len(batches)} batches for date {date_key}")
         
-        # Start processing all batches in background
-        batch_ids = []
-        for batch in all_batches:
-            # Get original file paths for this batch
-            original_file_paths = batch_manager.get_batch_file_paths(batch.batch_id)
-            
-            # Add to background tasks
-            background_tasks.add_task(
-                image_processor.process_batch, 
-                batch, 
-                original_file_paths
-            )
-            
-            batch_ids.append(batch.batch_id)
-        
+        # Prepare all batch processing coroutines
+        batch_tasks = [
+            process_single_batch_with_retry(batch, batch_manager, image_processor)
+            for batch in all_batches
+        ]
+        batch_ids = [batch.batch_id for batch in all_batches]
+
+        # Run all batch processing coroutines in parallel
+        await asyncio.gather(*batch_tasks)
+
         logger.info(f"Started processing {len(all_batches)} batches with {total_files_processed} total files")
         
         return {
@@ -256,17 +272,35 @@ async def process_files_by_date_post(request: ProcessFilesRequest = Body(...)):
     batch_manager = BatchManager()
     image_processor = ImageProcessor()
     all_batches = await batch_manager.create_batches_from_files(file_paths, batch_size=request.batch_size)
-    batch_ids = []
-    for batch in all_batches:
-        original_file_paths = batch_manager.get_batch_file_paths(batch.batch_id)
-        await image_processor.process_batch(batch, original_file_paths)
-        batch_ids.append(batch.batch_id)
+    batch_ids = [batch.batch_id for batch in all_batches]
+    # Prepare all batch processing coroutines
+    batch_tasks = [
+        process_single_batch_with_retry(batch, batch_manager, image_processor)
+        for batch in all_batches
+    ]
+    # Run all batch processing coroutines in parallel
+    await asyncio.gather(*batch_tasks)
     return {
         "message": f"Processed {len(file_paths)} files in {len(all_batches)} batches for date {request.date}",
         "files_processed": len(file_paths),
         "batches": len(all_batches),
         "batch_ids": batch_ids
     }
+
+async def process_single_batch_with_retry(batch_metadata, batch_manager, image_processor):
+    while batch_metadata.retry_count < batch_metadata.max_retries:
+        result = await image_processor.process_batch(batch_metadata)
+        if result and result.processing_status == "COMPLETED":
+            print(f"Batch {batch_metadata.batch_id} processed successfully.")
+            break
+        else:
+            batch_metadata.retry_count += 1
+            print(f"Batch {batch_metadata.batch_id} failed. Retry {batch_metadata.retry_count}/{batch_metadata.max_retries}")
+            # Optionally, update metadata in storage here
+            await asyncio.sleep(2)  # Optional: wait before retrying
+    else:
+        print(f"Batch {batch_metadata.batch_id} failed after {batch_metadata.max_retries} retries.")
+        # Optionally, log/report this batch as permanently failed
 
 if __name__ == "__main__":
     uvicorn.run(
