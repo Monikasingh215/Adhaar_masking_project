@@ -1,0 +1,433 @@
+{
+  "batch_id": "batch_20250709_002",
+  "batch_number": 2,
+  "total_files": 20,
+  "created_at": "2025-07-09T11:05:59.387635",
+  "processing_status": "completed",
+  "images": [
+    {
+      "original_filename": "file_124_single.tiff",
+      "original_format": "tiff",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        1,
+        1
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 30140,
+      "upload_date": "2025-07-09T10:49:32.042728",
+      "jpeg_filename": "file_124_single_000_p01.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_125.jpeg",
+      "original_format": "jpeg",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        300,
+        300
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 825,
+      "upload_date": "2025-07-09T10:49:32.044177",
+      "jpeg_filename": "file_125.jpeg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_126_multi.tiff",
+      "original_format": "tiff",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        1,
+        1
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 90432,
+      "upload_date": "2025-07-09T10:49:32.046866",
+      "jpeg_filename": "file_126_multi_001_p01.jpg,file_126_multi_001_p02.jpg,file_126_multi_001_p03.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_127.pdf",
+      "original_format": "pdf",
+      "original_size": [
+        595,
+        841
+      ],
+      "original_dpi": [
+        300,
+        300
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 1429,
+      "upload_date": "2025-07-09T10:49:32.050210",
+      "jpeg_filename": "file_127_002_p01.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_128.pdf",
+      "original_format": "pdf",
+      "original_size": [
+        595,
+        841
+      ],
+      "original_dpi": [
+        300,
+        300
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 1429,
+      "upload_date": "2025-07-09T10:49:32.052301",
+      "jpeg_filename": "file_128_003_p01.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_129_single.tiff",
+      "original_format": "tiff",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        1,
+        1
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 30140,
+      "upload_date": "2025-07-09T10:49:32.054798",
+      "jpeg_filename": "file_129_single_004_p01.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_131_multi.tiff",
+      "original_format": "tiff",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        1,
+        1
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 90432,
+      "upload_date": "2025-07-09T10:49:32.134107",
+      "jpeg_filename": "file_131_multi_005_p01.jpg,file_131_multi_005_p02.jpg,file_131_multi_005_p03.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_132_multi.tiff",
+      "original_format": "tiff",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        1,
+        1
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 90432,
+      "upload_date": "2025-07-09T10:49:32.140106",
+      "jpeg_filename": "file_132_multi_006_p01.jpg,file_132_multi_006_p02.jpg,file_132_multi_006_p03.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_133_multi.tiff",
+      "original_format": "tiff",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        1,
+        1
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 90432,
+      "upload_date": "2025-07-09T10:49:32.143424",
+      "jpeg_filename": "file_133_multi_007_p01.jpg,file_133_multi_007_p02.jpg,file_133_multi_007_p03.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_134_single.tiff",
+      "original_format": "tiff",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        1,
+        1
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 30140,
+      "upload_date": "2025-07-09T10:49:32.146582",
+      "jpeg_filename": "file_134_single_008_p01.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_136.pdf",
+      "original_format": "pdf",
+      "original_size": [
+        595,
+        841
+      ],
+      "original_dpi": [
+        300,
+        300
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 1429,
+      "upload_date": "2025-07-09T10:49:32.210368",
+      "jpeg_filename": "file_136_009_p01.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_137_single.tiff",
+      "original_format": "tiff",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        1,
+        1
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 30140,
+      "upload_date": "2025-07-09T10:49:32.212631",
+      "jpeg_filename": "file_137_single_010_p01.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_140.jpeg",
+      "original_format": "jpeg",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        300,
+        300
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 825,
+      "upload_date": "2025-07-09T10:49:32.216307",
+      "jpeg_filename": "file_140.jpeg",
+      "processed_filename": "file_124_single_processed.tiff",
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_141.png",
+      "original_format": "png",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        300,
+        300
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 285,
+      "upload_date": "2025-07-09T10:49:32.217309",
+      "jpeg_filename": "file_141_011.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_142.png",
+      "original_format": "png",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        300,
+        300
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 285,
+      "upload_date": "2025-07-09T10:49:32.218430",
+      "jpeg_filename": "file_142_012.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_144.pdf",
+      "original_format": "pdf",
+      "original_size": [
+        595,
+        841
+      ],
+      "original_dpi": [
+        300,
+        300
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 1429,
+      "upload_date": "2025-07-09T10:49:32.293679",
+      "jpeg_filename": "file_144_013_p01.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_145_single.tiff",
+      "original_format": "tiff",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        1,
+        1
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 30140,
+      "upload_date": "2025-07-09T10:49:32.296758",
+      "jpeg_filename": "file_145_single_014_p01.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_146.png",
+      "original_format": "png",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        300,
+        300
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 285,
+      "upload_date": "2025-07-09T10:49:32.299758",
+      "jpeg_filename": "file_146_015.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_147.png",
+      "original_format": "png",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        300,
+        300
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 285,
+      "upload_date": "2025-07-09T10:49:32.301759",
+      "jpeg_filename": "file_147_016.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    },
+    {
+      "original_filename": "file_148_multi.tiff",
+      "original_format": "tiff",
+      "original_size": [
+        100,
+        100
+      ],
+      "original_dpi": [
+        1,
+        1
+      ],
+      "color_mode": "RGB",
+      "compression_type": null,
+      "file_size_bytes": 90432,
+      "upload_date": "2025-07-09T10:49:32.302761",
+      "jpeg_filename": "file_148_multi_017_p01.jpg,file_148_multi_017_p02.jpg,file_148_multi_017_p03.jpg",
+      "processed_filename": null,
+      "original_bit_depth": 8,
+      "original_alpha_channel": false,
+      "original_transparency": false
+    }
+  ],
+  "processing_start_time": "2025-07-09T11:06:06.307300",
+  "processing_end_time": "2025-07-09T11:06:11.255450",
+  "errors": [],
+  "input_source": "external"
+}

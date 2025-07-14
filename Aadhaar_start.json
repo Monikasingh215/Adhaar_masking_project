@@ -1,0 +1,5 @@
+{
+  "manual_start_date": null,
+  "worker_nodes": 2,
+  "batch_size": 20
+}

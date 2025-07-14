@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Batch Image Processor</title>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0; 
+      padding: 20px; 
+      background-color: #f5f5f5; 
+    }
+    .container { 
+      max-width: 800px; 
+      margin: auto; 
+      background: white; 
+      padding: 30px; 
+      border-radius: 10px; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+    }
+    h2 { 
+      color: #333; 
+      text-align: center; 
+      margin-bottom: 30px; 
+    }
+    .upload-section {
+      border: 2px dashed #ccc;
+      padding: 30px;
+      text-align: center;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      transition: border-color 0.3s;
+    }
+    .upload-section:hover {
+      border-color: #007bff;
+    }
+    .upload-section.dragover {
+      border-color: #007bff;
+      background-color: #f8f9fa;
+    }
+    .file-input {
+      display: none;
+    }
+    .upload-btn {
+      background: #007bff;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px;
+    }
+    .upload-btn:hover {
+      background: #0056b3;
+    }
+    .upload-btn:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+    .form-group {
+      margin: 15px 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+    input[type="number"] {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 100px;
+    }
+    .result { 
+      margin-top: 20px; 
+      padding: 15px;
+      border-radius: 5px;
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error { 
+      color: #721c24;
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+    .progress {
+      margin-top: 20px;
+      display: none;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background-color: #e9ecef;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background-color: #007bff;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .file-info {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    .batch-info {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #e7f3ff;
+      border-radius: 5px;
+      border-left: 4px solid #007bff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📁 Batch Image Processor</h2>
+    
+    <div class="upload-section" id="uploadSection">
+      <p><strong>Select a folder containing your image files:</strong></p>
+      <p style="color: #666; font-size: 14px;">
+        This will automatically create batches of 20 files each and process them through JPEG conversion and AI masking.
+      </p>
+      <input type="file" id="fileInput" class="file-input" webkitdirectory multiple>
+      <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
+        📂 Choose Folder
+      </button>
+      <p style="color: #666; font-size: 12px; margin-top: 10px;">
+        Supported formats: PDF, TIFF, PNG, JPEG, BMP (including multi-page PDFs and TIFFs)
+      </p>
+    </div>
+
+    <div class="form-group">
+      <label for="batchSize">Batch Size (files per batch):</label>
+      <input type="number" id="batchSize" value="20" min="1" max="100">
+    </div>
+
+    <button type="button" class="upload-btn" id="processBtn" onclick="processFiles()" disabled>
+      🚀 Start Processing
+    </button>
+
+    <div class="file-info" id="fileInfo" style="display: none;"></div>
+    
+    <div class="progress" id="progress">
+      <p>Uploading files...</p>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <div class="result" id="result" style="display: none;"></div>
+    <div class="error" id="error" style="display: none;"></div>
+  </div>
+
+  <script>
+    let selectedFiles = [];
+
+    // Handle file selection
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      selectedFiles = Array.from(e.target.files);
+      updateFileInfo();
+      document.getElementById('processBtn').disabled = selectedFiles.length === 0;
+    });
+
+    // Handle drag and drop
+    const uploadSection = document.getElementById('uploadSection');
+    
+    uploadSection.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      uploadSection.classList.add('dragover');
+    });
+
+    uploadSection.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      uploadSection.classList.remove('dragover');
+    });
+
+    uploadSection.addEventListener('drop', function(e) {
+      e.preventDefault();
+      uploadSection.classList.remove('dragover');
+      
+      const files = Array.from(e.dataTransfer.files);
+      // Filter for supported file types
+      const supportedExtensions = ['.pdf', '.tiff', '.tif', '.png', '.jpg', '.jpeg', '.bmp'];
+      selectedFiles = files.filter(file => {
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        return supportedExtensions.includes(ext);
+      });
+      
+      updateFileInfo();
+      document.getElementById('processBtn').disabled = selectedFiles.length === 0;
+    });
+
+    function updateFileInfo() {
+      const fileInfo = document.getElementById('fileInfo');
+      if (selectedFiles.length === 0) {
+        fileInfo.style.display = 'none';
+        return;
+      }
+
+      const batchSize = parseInt(document.getElementById('batchSize').value);
+      const totalBatches = Math.ceil(selectedFiles.length / batchSize);
+      
+      // Group files by extension
+      const fileTypes = {};
+      selectedFiles.forEach(file => {
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        fileTypes[ext] = (fileTypes[ext] || 0) + 1;
+      });
+
+      const fileTypeList = Object.entries(fileTypes)
+        .map(([ext, count]) => `${ext}: ${count} files`)
+        .join(', ');
+
+      fileInfo.innerHTML = `
+        <strong>Selected Files:</strong> ${selectedFiles.length} files<br>
+        <strong>File Types:</strong> ${fileTypeList}<br>
+        <strong>Batch Size:</strong> ${batchSize} files per batch<br>
+        <strong>Total Batches:</strong> ${totalBatches} batches
+      `;
+      fileInfo.style.display = 'block';
+    }
+
+    // Update file info when batch size changes
+    document.getElementById('batchSize').addEventListener('change', updateFileInfo);
+
+    async function processFiles() {
+      if (selectedFiles.length === 0) {
+        showError('Please select files or a folder first.');
+        return;
+      }
+
+      const batchSize = document.getElementById('batchSize').value;
+      
+      // Show progress
+      document.getElementById('progress').style.display = 'block';
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('error').style.display = 'none';
+      document.getElementById('processBtn').disabled = true;
+
+      try {
+        const formData = new FormData();
+        
+        // Add all files
+        for (const file of selectedFiles) {
+          formData.append('files', file, file.webkitRelativePath || file.name);
+        }
+        formData.append('batch_size', batchSize);
+
+        // Simulate progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += 10;
+          document.getElementById('progressFill').style.width = Math.min(progress, 90) + '%';
+        }, 200);
+
+        const response = await fetch('/process-upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        clearInterval(progressInterval);
+        document.getElementById('progressFill').style.width = '100%';
+
+        const data = await response.json();
+        
+        document.getElementById('progress').style.display = 'none';
+        
+        if (response.ok) {
+          showResult(data);
+        } else {
+          showError(data.detail || 'Upload failed');
+        }
+      } catch (error) {
+        document.getElementById('progress').style.display = 'none';
+        showError('Network error: ' + error.message);
+      } finally {
+        document.getElementById('processBtn').disabled = false;
+      }
+    }
+
+    function showResult(data) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = `
+        <h3>✅ Processing Started Successfully!</h3>
+        <p><strong>${data.message}</strong></p>
+        <div class="batch-info">
+          <strong>Processing Details:</strong><br>
+          • Total Files: ${data.total_files}<br>
+          • Total Batches: ${data.total_batches}<br>
+          • Batch Size: ${data.batch_size} files<br>
+          • Batch IDs: ${data.batch_ids.join(', ')}
+        </div>
+        <p style="margin-top: 15px;">
+          <strong>What happens next:</strong><br>
+          1. Files are converted to JPEG format (all pages for multi-page files)<br>
+          2. AI processing is applied to all JPEG files<br>
+          3. Files are restored to their original format with metadata preservation<br>
+          4. Results are saved in the output directory
+        </p>
+      `;
+      resultDiv.style.display = 'block';
+    }
+
+    function showError(message) {
+      const errorDiv = document.getElementById('error');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
