@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     
     # Processing settings
     batch_size: int = 20
-    max_workers: int = 4
+    max_workers: int = 20
     
     # File paths
     base_dir: Path = Path(__file__).parent.parent.parent

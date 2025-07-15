@@ -1,5 +1,8 @@
 {
   "manual_start_date": null,
-  "worker_nodes": 2,
-  "batch_size": 20
+  "worker_nodes": 2, 
+  "batch_size": 20,
+  "ai_masking_enabled": true,
+  "max_retries": 3,
+  "retry_delay_seconds": 10
 }
