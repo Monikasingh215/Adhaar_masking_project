@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Optional
 from ..models.schemas import FileValidationResult, ImageFormat
-import imghdr
 import os
 
 def validate_image_file(file_path: Path, max_size_bytes: int = 50 * 1024 * 1024) -> FileValidationResult:

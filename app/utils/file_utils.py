@@ -8,6 +8,10 @@ from datetime import datetime
 import mimetypes
 from PIL import Image, TiffTags
 import fitz  # PyMuPDF
+from datetime import datetime, timedelta
+import logging
+import re
+
 
 from app.core.config import settings
 from app.core.logging import setup_logging
@@ -442,3 +446,62 @@ def get_files_by_date(date: str, search_dir: str) -> List[Path]:
             if file_date == target_date:
                 files.append(file)
     return files
+
+def save_uploaded_files(files, input_dir):
+    saved_files = []
+    file_paths_by_date = {}
+    for file in files:
+        if hasattr(file, 'webkitRelativePath') and file.webkitRelativePath:
+            relative_path = file.webkitRelativePath
+            dest_path = input_dir / relative_path
+        else:
+            dest_path = input_dir / file.filename
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(dest_path, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+        saved_files.append(dest_path)
+        try:
+            file_info = dest_path.stat()
+            date_key = file_info.st_ctime
+        except Exception:
+            import time
+            date_key = time.time()
+        file_paths_by_date.setdefault(date_key, []).append(dest_path)
+    return saved_files, file_paths_by_date
+
+
+def delete_old_folders(base_dir, days_old):
+    """
+    Delete folders in base_dir older than days_old.
+    """
+    import re
+    date_pattern = re.compile(r"\d{4}-\d{2}-\d{2}")
+    now = datetime.now().date()
+    for folder in os.listdir(base_dir):
+        folder_path = os.path.join(base_dir, folder)
+        if os.path.isdir(folder_path):
+            if date_pattern.fullmatch(folder):
+                try:
+                    folder_date = datetime.strptime(folder, "%Y-%m-%d").date()
+                    if (now - folder_date).days > days_old:
+                        shutil.rmtree(folder_path)
+                        logging.info(f"Deleted old folder: {folder_path}")
+                except Exception as e:
+                    logging.warning(f"Skipping {folder_path}: {e}")
+            else:
+                # Not a date-formatted folder, skip without warning
+                continue
+
+def cleanup_files_in_batch(dirs, filenames):
+    """
+    Remove files with given filenames from each directory in dirs.
+    """
+    for dir_path in dirs:
+        for filename in filenames:
+            file_path = os.path.join(dir_path, filename)
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    logging.info(f"Deleted file: {file_path}")
+            except Exception as e:
+                logging.warning(f"Could not delete {file_path}: {e}")

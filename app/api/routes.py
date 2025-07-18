@@ -1,9 +1,12 @@
 """
 API routes for the Image Processing API - Simplified for core requirements
 """
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, UploadFile, File, Form, Body
+from fastapi.responses import JSONResponse
 from pathlib import Path
-from typing import Dict, Any
+import asyncio
+from app.models.schemas import ProcessFilesRequest
+
 
 from app.models.schemas import (
     ProcessRequest, 
@@ -15,17 +18,106 @@ from app.services.image_processor import ImageProcessor
 from app.core.logging import setup_logging
 from app.core.config import settings
 from app.services.batch_manager import BatchManager
-from app.utils.file_utils import FileUtils
+from app.utils.file_utils import FileUtils, save_uploaded_files
+from app.utils.config_utils import is_cold_stop  
 
 router = APIRouter()
 logger = setup_logging()
 batch_manager = BatchManager()
 image_processor = ImageProcessor()
 
-# Global storage for processing status (in production, use Redis or database)
-processing_status: Dict[str, Dict[str, Any]] = {}
+async def process_single_batch_with_retry(batch, batch_manager, image_processor, max_retries=3):
+    """
+    Process a single batch with retry logic.
+    """
+    for attempt in range(max_retries):
+        try:
+            original_file_paths = batch_manager.get_batch_file_paths(batch.batch_id)
+            await image_processor.process_batch(batch, original_file_paths)
+            return True
+        except Exception as e:
+            logger.error(f"Error processing batch {batch.batch_id} (attempt {attempt+1}): {e}")
+            if attempt == max_retries - 1:
+                raise
+            await asyncio.sleep(2)  # wait before retrying
 
-UPLOAD_DIR = Path("data/input")
+# Health check endpoint
+@router.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {
+        "status": "healthy",
+        "version": "1.0.0",
+        "service": "Image Processing API"
+    }
+
+@router.post("/process-upload")
+async def process_upload(
+    background_tasks: BackgroundTasks,
+    files: list[UploadFile] = File(...),
+    batch_size: int = Form(None)
+):
+    """
+    Upload a folder of files and automatically create batches for processing.
+    Handles folder structure and creates batches of specified size.
+    """
+    # Cold stop check
+    if is_cold_stop():
+        return JSONResponse(
+            status_code=503,
+            content={"error": "Processing is currently paused by admin (cold stop)."}
+        )
+
+    # Use batch size from config if not provided
+    if batch_size is None:
+        batch_size = get_batch_size()
+
+    try:
+        # Create upload directory
+        input_dir = Path("data/input/web_upload")
+        input_dir.mkdir(parents=True, exist_ok=True)
+        
+        saved_files, file_paths_by_date = save_uploaded_files(files, input_dir)
+        
+        logger.info(f"Uploaded {len(saved_files)} files")
+        
+        # Create batches from the uploaded files
+        all_batches = []
+        total_files_processed = 0
+        
+        for date_key, file_paths in file_paths_by_date.items():
+            logger.info(f"Processing {len(file_paths)} files from date {date_key}")
+            # Create batches for this date group
+            batches = await batch_manager.create_batches_from_files(file_paths, batch_size=batch_size)
+            all_batches.extend(batches)
+            total_files_processed += len(file_paths)
+            
+            logger.info(f"Created {len(batches)} batches for date {date_key}")
+        
+        # Prepare all batch processing coroutines
+        batch_tasks = [
+            process_single_batch_with_retry(batch, batch_manager, image_processor)
+            for batch in all_batches
+        ]
+        batch_ids = [batch.batch_id for batch in all_batches]
+
+        # Run all batch processing coroutines in parallel
+        await asyncio.gather(*batch_tasks)
+
+        logger.info(f"Started processing {len(all_batches)} batches with {total_files_processed} total files")
+        
+        return {
+            "message": f"Successfully uploaded {len(saved_files)} files and started processing {len(all_batches)} batches",
+            "total_files": len(saved_files),
+            "total_batches": len(all_batches),
+            "batch_size": batch_size,
+            "batch_ids": batch_ids,
+            "status": "processing_started"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in process_upload: {e}")
+        raise HTTPException(status_code=500, detail=f"Upload processing failed: {str(e)}")
 
 
 @router.post("/process", response_model=ProcessResponse)
@@ -155,4 +247,50 @@ async def get_system_info():
         "supported_formats": settings.supported_formats,
         "jpeg_quality": settings.jpeg_quality,
         "ai_model_name": settings.ai_model_name
+    }
+
+def get_files_by_date(date: str, directory: str):
+    """
+    Get all files in the specified directory that match the given date.
+    Assumes files are organized or named in a way that allows filtering by date.
+    """
+    from pathlib import Path
+    import re
+
+    path = Path(directory)
+    if not path.exists() or not path.is_dir():
+        return []
+
+    # Example: filter files by date in filename (customize as needed)
+    date_pattern = re.compile(rf"{date}")
+    return [
+        str(file_path)
+        for file_path in path.iterdir()
+        if file_path.is_file() and date_pattern.search(file_path.name)
+    ]
+
+@router.post("/process-files/")
+async def process_files_by_date_post(request: ProcessFilesRequest = Body(...)):
+    """
+    Trigger server-side processing for all files in the specified directory matching the given date (POST version).
+    """
+    file_paths = get_files_by_date(request.date, request.directory)
+    if not file_paths:
+        raise HTTPException(status_code=404, detail="No files found for the given date and directory.")
+    batch_manager = BatchManager()
+    image_processor = ImageProcessor()
+    all_batches = await batch_manager.create_batches_from_files(file_paths, batch_size=request.batch_size)
+    batch_ids = [batch.batch_id for batch in all_batches]
+    # Prepare all batch processing coroutines
+    batch_tasks = [
+        process_single_batch_with_retry(batch, batch_manager, image_processor)
+        for batch in all_batches
+    ]
+    # Run all batch processing coroutines in parallel
+    await asyncio.gather(*batch_tasks)
+    return {
+        "message": f"Processed {len(file_paths)} files in {len(all_batches)} batches for date {request.date}",
+        "files_processed": len(file_paths),
+        "batches": len(all_batches),
+        "batch_ids": batch_ids
     }
