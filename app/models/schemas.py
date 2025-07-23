@@ -63,14 +63,23 @@ class ImageMetadata(BaseModel):
     upload_date: datetime
     
     # Processing metadata
-    jpeg_filename: Optional[str] = None
+    jpeg_filenames: Optional[List[str]] = None  # Multi-page support
+
     processed_filename: Optional[str] = None
     
     # Essential metadata for format restoration
     original_bit_depth: Optional[int] = None
     original_alpha_channel: bool = False
     original_transparency: bool = False
-    
+
+        # --- NEW fields needed by pipeline ---
+    source_path: Optional[str] = None
+    source_type: Optional[FileSource] = None
+    original_palette: Optional[list] = None
+    original_icc_profile: Optional[str] = None
+    jpeg_path: Optional[str] = None
+    processed_path: Optional[str] = None
+
     class Config:
         json_encoders = {
             datetime: lambda v: v.isoformat()
@@ -88,7 +97,10 @@ class BatchMetadata(BaseModel):
     processing_end_time: Optional[datetime] = None
     errors: List[str] = []
     input_source: FileSource = FileSource.LOCAL
-    
+    # retry bookkeeping (used by BatchManager)
+    retry_count: int = 0
+    max_retries: int = 3
+
     class Config:
         json_encoders = {
             datetime: lambda v: v.isoformat()

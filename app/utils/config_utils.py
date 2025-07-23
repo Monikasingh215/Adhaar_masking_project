@@ -8,6 +8,15 @@ def read_json_config(filename):
         return {}
     with open(config_path, "r") as f:
         return json.load(f)
+    
+def get_max_retries():
+    config = read_json_config("aadhaar_start.json")
+    return config.get("max_retries", 3)
+
+def get_retry_delay():
+    config = read_json_config("aadhaar_start.json")
+    return config.get("retry_delay_seconds", 5)
+
 
 def is_cold_stop():
     config = read_json_config("aadhaar_stop.json")

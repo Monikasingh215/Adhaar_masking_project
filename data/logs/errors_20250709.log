@@ -1,1 +1,0 @@
-2025-07-09 11:05:14,630 - root - ERROR - global_exception_handler:66 - Unhandled exception: time data '09-07-2025' does not match format '%Y-%m-%d'

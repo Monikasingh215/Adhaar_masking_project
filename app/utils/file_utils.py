@@ -57,7 +57,7 @@ class FileUtils:
                 'source_type': FileSource.LOCAL,
                 'file_size_bytes': file_info.get('size', 0),
                 'upload_date': file_info.get('created', datetime.now()),
-                'original_format': FileUtils._get_format_enum(extension),
+                'original_format': FileUtils.get_format_enum(extension),
                 'original_size': (0, 0),
                 'original_dpi': settings.default_dpi,
                 'color_mode': ColorMode.RGB,
@@ -184,7 +184,7 @@ class FileUtils:
             }
     
     @staticmethod
-    def _get_format_enum(extension: str) -> ImageFormat:
+    def get_format_enum(extension: str) -> ImageFormat:
         """Convert file extension to ImageFormat enum."""
         format_map = {
             '.tiff': ImageFormat.TIFF,
@@ -280,7 +280,7 @@ class FileUtils:
                 filename=file_path.name,
                 is_valid=is_valid,
                 file_size_bytes=file_info.get('size', 0),
-                format_detected=FileUtils._get_format_enum(extension),
+                format_detected=FileUtils.get_format_enum(extension),
                 error_message=None if is_valid else "Invalid file format"
             )
             

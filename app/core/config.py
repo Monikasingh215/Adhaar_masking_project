@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from pathlib import Path
+import json
 
 
 class Settings(BaseSettings):
@@ -54,6 +55,7 @@ class Settings(BaseSettings):
         
         for directory in directories:
             directory.mkdir(parents=True, exist_ok=True)
-
+    
+    
 # Global settings instance
 settings = Settings()

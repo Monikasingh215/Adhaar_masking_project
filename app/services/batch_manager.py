@@ -109,8 +109,9 @@ class BatchManager:
                 if validation_result.is_valid:
                     valid_files.append(file_path)
                 else:
+                    print(f"⚠️ Skipping {file_path.name}: {validation_result.error_message}")  # Debug
                     logger.warning(f"Skipping invalid file {file_path}: {validation_result.error_message}")
-            
+
             if not valid_files:
                 raise ValueError("No valid files found for processing")
             
@@ -300,7 +301,7 @@ class BatchManager:
     async def process_single_batch_with_retry(self, batch_metadata, image_processor):
         while batch_metadata.retry_count < batch_metadata.max_retries:
             result = await image_processor.process_batch(batch_metadata)
-            if result and result.processing_status == "COMPLETED":
+            if result and result.processing_status == ProcessingStatus.COMPLETED:
                 print(f"Batch {batch_metadata.batch_id} processed successfully.")
                 break
             else:
@@ -310,27 +311,3 @@ class BatchManager:
         else:
             print(f"Batch {batch_metadata.batch_id} failed after {batch_metadata.max_retries} retries.")
 
-def process_batch(batch, process_func, max_retries=3, retry_delay=60):
-    """
-    Process a batch with retry logic.
-    - batch: the batch data
-    - process_func: function to process the batch
-    - max_retries: number of retries
-    - retry_delay: seconds to wait between retries
-    """
-    attempt = 0
-    while attempt <= max_retries:
-        try:
-            result = process_func(batch)
-            if result:  # Assume True means success
-                logging.info(f"Batch {batch['id']} processed successfully.")
-                return True
-            else:
-                raise Exception("Batch processing failed.")
-        except Exception as e:
-            attempt += 1
-            logging.warning(f"Attempt {attempt} failed for batch {batch['id']}: {e}")
-            if attempt > max_retries:
-                logging.error(f"Batch {batch['id']} failed after {max_retries} retries.")
-                return False
-            time.sleep(retry_delay)

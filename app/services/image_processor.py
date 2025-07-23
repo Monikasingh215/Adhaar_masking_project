@@ -14,7 +14,8 @@ from ..models.schemas import (
 
 from ..utils.metadata_utils import MetadataManager
 from .converter import ImageConverter
-from .ai_simulator import AIModelSimulator
+#from .ai_simulator import AIModelSimulator
+from .masking_client import MaskingClient
 
 logger = get_logger(__name__)
 
@@ -24,7 +25,7 @@ class ImageProcessor:
 
     def __init__(self):
         self.converter = ImageConverter()
-        self.ai_simulator = AIModelSimulator()
+        self.masking_client = MaskingClient()
 
     async def process_batch(self, batch_metadata: BatchMetadata, original_file_paths: List[Path] = None) -> Optional[BatchMetadata]:
         """Main entry point to process a batch of images with the complete workflow, now using a worker pool for concurrency."""
@@ -116,12 +117,21 @@ class ImageProcessor:
                         # 2. AI Masking for each JPEG file (if enabled)
                         ai_success = True
                         if ai_masking_enabled:
-                            for jpeg_file in jpeg_files:
-                                ai_result = await self.ai_simulator._process_single_image(jpeg_file)
-                                if not ai_result.processing_successful:
+                            for i, jpeg_file in enumerate(jpeg_files):
+                                masked_path = await self.masking_client.mask_image(jpeg_file)
+                                if masked_path and masked_path.exists():
+                                    jpeg_files[i] = masked_path  # Update to use the masked version
+                                    logger.info(f"[Worker {worker_id}] Masked {jpeg_file.name} → {masked_path.name}")
+                                else:
                                     ai_success = False
-                                    logger.error(f"AI processing failed for {jpeg_file.name}")
-                        # 3. Restore to original format (single or multi-page)
+                                    logger.error(f"[Worker {worker_id}] Masking failed for {jpeg_file.name}")
+                                    error_files.append({
+                                        "filename": jpeg_file.name,
+                                        "error": "Masking failed or returned invalid file",
+                                        "stage": "ai_masking"
+                                    })
+
+ # 3. Restore to original format (single or multi-page)
                         if len(jpeg_files) > 1:
                             result = await self._restore_multi_page_format(jpeg_files, img_metadata, output_dir)
                         else:

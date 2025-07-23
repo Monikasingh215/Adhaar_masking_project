@@ -12,3 +12,4 @@ aiofiles
 pytest
 pytest-asyncio
 reportlab
+httpx
